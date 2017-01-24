@@ -1,11 +1,11 @@
 
 package org.usfirst.frc.team2850.robot;
 
-import org.usfirst.frc.team2850.robot.commands.Drive;
-import org.usfirst.frc.team2850.robot.subsystems.DriveTrain;
-
+import org.usfirst.frc.team2850.robot.commands.DriveToDistLeft;
+import org.usfirst.frc.team2850.robot.commands.DriveToDistance;
+import org.usfirst.frc.team2850.robot.subsystems.DriveLeft;
+import org.usfirst.frc.team2850.robot.subsystems.DriveRight;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -19,23 +19,21 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * directory.
  */
 public class Robot extends IterativeRobot {
-
-	public static final DriveTrain drivetrain = new DriveTrain();
 	public static OI oi;
 	public static RobotMap robot = new RobotMap();
 
 	Command autonomousCommand;
 
+	public static DriveLeft driveleft = new DriveLeft();
+	public static DriveRight driveright = new DriveRight();
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
 	 */
 	@Override
 	public void robotInit() {
+		autonomousCommand = new DriveToDistLeft(36.0);
 		oi = new OI();
-		Joystick xbox1 = new Joystick(RobotMap.p_xbox1);
-//		DriveTrain.gyro.calibrate();
-		autonomousCommand = new Drive();
 		SmartDashboard.putData(Scheduler.getInstance());
 	}
 
@@ -46,7 +44,6 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void disabledInit() {
-
 	}
 
 	@Override
@@ -56,11 +53,8 @@ public class Robot extends IterativeRobot {
 
 	@Override
 	public void autonomousInit() {
-		
 		// schedule the autonomous command (example)
-		if (autonomousCommand != null) {
 			autonomousCommand.start();
-		}
 	}
 
 	/**
@@ -73,9 +67,7 @@ public class Robot extends IterativeRobot {
 
 	@Override
 	public void teleopInit() {
-		if (autonomousCommand != null) {
 			autonomousCommand.cancel();
-		}
 	}
 
 	@Override

@@ -1,53 +1,49 @@
 package org.usfirst.frc.team2850.robot.commands;
 
 import org.usfirst.frc.team2850.robot.Robot;
+import org.usfirst.frc.team2850.robot.subsystems.DriveLeft;
 
 import edu.wpi.first.wpilibj.command.Command;
-
-import org.usfirst.frc.team2850.robot.subsystems.DriveTrain;
-import org.usfirst.frc.team2850.robot.subsystems.DriveTrain.*;
-import org.usfirst.frc.team2850.robot.RobotMap;
 
 /**
  *
  */
-public class Drive extends Command {
+public class DriveToDistLeft extends Command {
 
-    public Drive() {
+	private double setpoint;
+	
+    public DriveToDistLeft() {
         // Use requires() here to declare subsystem dependencies
-    	requires(Robot.drivetrain);
+        // eg. requires(chassis);
+    	requires(Robot.driveleft);
+    }
+    public DriveToDistLeft(double setpoint) {
+        this.setpoint = setpoint;
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-    	System.out.println("PID Drive Initialized");
-    	DriveTrain.pidDriveInit(36.0);
+    	DriveLeft.leftEncoder.reset();
+    	Robot.driveleft.setSetpoint(setpoint);
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	System.out.println("PID Drive Enabled");
-    	DriveTrain.pidDriveEnable();
-    	System.out.println("PID Drive Driving");
-    	DriveTrain.pidDrive(36.0);
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-    	System.out.println("PID Drive Finished");
-    	return DriveTrain.pidDriveFinished();
+    	System.out.println("Left Error: " + DriveLeft.leftEncoder.getDistance());
+        return Math.abs(Robot.driveleft.getPosition() - setpoint) < .24;
     }
 
     // Called once after isFinished returns true
     protected void end() {
-    	System.out.println("PID Drive Ended");
-    	DriveTrain.pidDriveEnd();
+    	Robot.driveleft.disable();
     }
 
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
-    	System.out.println("PID Drive Interuptted");
-    	DriveTrain.pidDriveEnd();
     }
 }

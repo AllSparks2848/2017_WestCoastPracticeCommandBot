@@ -1,10 +1,9 @@
-
 package org.usfirst.frc.team2850.robot;
 
-import org.usfirst.frc.team2850.robot.commands.DriveToDistLeft;
+import org.usfirst.frc.team2850.robot.commands.AutonGearLeft;
 import org.usfirst.frc.team2850.robot.commands.DriveToDistance;
-import org.usfirst.frc.team2850.robot.subsystems.DriveLeft;
-import org.usfirst.frc.team2850.robot.subsystems.DriveRight;
+import org.usfirst.frc.team2850.robot.subsystems.DriveTrain;
+
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -24,17 +23,19 @@ public class Robot extends IterativeRobot {
 
 	Command autonomousCommand;
 
-	public static DriveLeft driveleft = new DriveLeft();
-	public static DriveRight driveright = new DriveRight();
+	public static DriveTrain drivetrain = new DriveTrain();
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
 	 */
 	@Override
 	public void robotInit() {
-		autonomousCommand = new DriveToDistLeft(36.0);
+		autonomousCommand = new AutonGearLeft();
 		oi = new OI();
 		SmartDashboard.putData(Scheduler.getInstance());
+		SmartDashboard.putData(drivetrain);
+		
+		
 	}
 
 	/**
@@ -55,6 +56,7 @@ public class Robot extends IterativeRobot {
 	public void autonomousInit() {
 		// schedule the autonomous command (example)
 			autonomousCommand.start();
+			
 	}
 
 	/**

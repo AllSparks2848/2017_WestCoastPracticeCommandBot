@@ -24,6 +24,6 @@ public class RobotMap {
 	//Sensor ports
 	public static int p_leftEncoderA = 0;
 	public static int p_leftEncoderB = 1;
-	public static int p_rightEncoderA = 2;
-	public static int p_rightEncoderB = 3;
+	public static int p_rightEncoderA = 3;
+	public static int p_rightEncoderB = 2;
 }

@@ -1,52 +1,45 @@
 package org.usfirst.frc.team2850.robot.commands;
 
 import org.usfirst.frc.team2850.robot.Robot;
-import org.usfirst.frc.team2850.robot.subsystems.DriveLeft;
-import org.usfirst.frc.team2850.robot.subsystems.DriveRight;
+import org.usfirst.frc.team2850.robot.subsystems.DriveTrain;
 
 import edu.wpi.first.wpilibj.command.Command;
 
-/**
- *
- */
 public class DriveToDistance extends Command {
 	private double setpoint;
 	
 	public DriveToDistance() {
-		requires(Robot.driveright);
-        requires(Robot.driveleft);
+		requires(Robot.drivetrain);
 	}
     public DriveToDistance(double setpoint) {
         this.setpoint = setpoint;
     }
 
-    // Called just before this Command runs the first time
     protected void initialize() {
-    	DriveLeft.leftEncoder.reset();
-    	DriveRight.rightEncoder.reset();
-    	Robot.driveleft.setSetpoint(setpoint);
-    	Robot.driveright.setSetpoint(-setpoint);
+    	DriveTrain.leftEncoder.reset();
+    	DriveTrain.rightEncoder.reset();
+    	//Robot.drivetrain.pickPIDType("Encoder");
+    	Robot.drivetrain.setSetpoint(setpoint);
     }
 
-    // Called repeatedly when this Command is scheduled to run
     protected void execute() {
     }
 
-    // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-    	System.out.println("Left Error: " + DriveLeft.leftEncoder.getDistance());
-    	System.out.println("Right Error: " + DriveRight.rightEncoder.getDistance());
-        return Math.abs(Robot.driveleft.getPosition() - setpoint) < .24;
+    	System.out.println("Left Dist: " + DriveTrain.leftEncoder.getDistance());
+    	System.out.println("Right Dist: " + DriveTrain.rightEncoder.getDistance());
+    	System.out.println("Avg Dist: " + (DriveTrain.leftEncoder.getDistance()+DriveTrain.rightEncoder.getDistance())/2);
+    	System.out.println("Position: " + Robot.drivetrain.getPosition());
+    	System.out.println("Error: " + Robot.drivetrain.getPIDController().getError());
+    	System.out.println("P term: " + Robot.drivetrain.getPIDController().getP());
+    	System.out.println("PID Out: " + Robot.drivetrain.getPIDController().get());
+        return Math.abs(Robot.drivetrain.getPosition() - setpoint) < .75;
     }
 
-    // Called once after isFinished returns true
     protected void end() {
-    	Robot.driveleft.disable();
-    	Robot.driveright.disable();
+    	Robot.drivetrain.disable();
     }
 
-    // Called when another command which requires one or more of the same
-    // subsystems is scheduled to run
     protected void interrupted() {
     }
 }

@@ -18,8 +18,8 @@ public class DriveToDistance extends Command {
     protected void initialize() {
     	DriveTrain.leftEncoder.reset();
     	DriveTrain.rightEncoder.reset();
-    	//Robot.drivetrain.pickPIDType("Encoder");
     	Robot.drivetrain.setSetpoint(setpoint);
+    	Robot.drivetrain.getPIDController().enable();
     }
 
     protected void execute() {

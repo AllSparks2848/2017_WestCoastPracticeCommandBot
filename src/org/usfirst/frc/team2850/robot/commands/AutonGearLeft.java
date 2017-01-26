@@ -8,7 +8,11 @@ import edu.wpi.first.wpilibj.command.CommandGroup;
 public class AutonGearLeft extends CommandGroup {
 
     public AutonGearLeft() {
+    	//addSequential(new DriveToDistance(39.0));
+    	
     	addSequential(new DriveToDistance(39.0));
+    	
+    	
         // Add Commands here:
         // e.g. addSequential(new Command1());
         //      addSequential(new Command2());

@@ -20,8 +20,6 @@ public class DriveTrain extends PIDSubsystem {
 	private static double iDrive = 0;
 	private static double dDrive = .007;
 	
-	//private static double PIDIn = 0;
-	
 	public static Encoder rightEncoder = new Encoder(RobotMap.p_rightEncoderA, RobotMap.p_rightEncoderB, false, Encoder.EncodingType.k4X);
 	public static Encoder leftEncoder = new Encoder(RobotMap.p_leftEncoderA, RobotMap.p_leftEncoderB, false, Encoder.EncodingType.k4X);
 	public static ADXRS450_Gyro gyro = new ADXRS450_Gyro();
@@ -34,7 +32,6 @@ public class DriveTrain extends PIDSubsystem {
     	super("DriveTrain", pDrive, iDrive, dDrive);
     	leftEncoder.setDistancePerPulse(-0.01057);
     	rightEncoder.setDistancePerPulse(.01125);
-    	enable();
     }
 
     public void initDefaultCommand() {
@@ -50,8 +47,6 @@ public class DriveTrain extends PIDSubsystem {
     }
 
     protected void usePIDOutput(double output) {
-        // Use output to drive your system, like a motor
-        // e.g. yourMotor.set(output);
     	drive1.tankDrive(output, output);
     	drive2.tankDrive(output, output);
     }
@@ -60,13 +55,5 @@ public class DriveTrain extends PIDSubsystem {
     	drive1.tankDrive(left, right);
     	drive2.tankDrive(left, right);
     }
-    
-//    public void pickPIDType(String type) {
-//    	if(type.equals("Encoder")) {
-//    		PIDIn = (leftEncoder.getDistance()+rightEncoder.getDistance())/2;
-//    	}
-//    	else {
-//    		PIDIn = gyro.getAngle();
-//    	}
-//    }
 }
+

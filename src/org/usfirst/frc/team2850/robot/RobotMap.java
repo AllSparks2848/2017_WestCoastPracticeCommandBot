@@ -20,6 +20,10 @@ public class RobotMap {
 	public static int p_rightDrive3 = 5;
 	
 	public static int p_driveshifter = 0;
+	public static int p_frontLeftButterfly = 1;
+	public static int p_frontRightButterfly = 2;
+	public static int p_backLeftButterfly = 3;
+	public static int p_backRightButterfly = 4;
 	
 	//Sensor ports
 	public static int p_leftEncoderA = 0;

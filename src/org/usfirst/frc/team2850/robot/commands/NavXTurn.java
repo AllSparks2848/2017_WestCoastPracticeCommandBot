@@ -34,10 +34,10 @@ public class NavXTurn extends Command {
     protected void execute() {
     	if (Math.abs(Robot.navxturntrain.getPIDController().get()) < .1 && Math.abs(Robot.navxturntrain.getPIDController().get()) > 0) {
     		if (Robot.navxturntrain.getPIDController().get() < 0) {
-    			Robot.navxturntrain.usePIDOutput(-.1);
+    			Robot.navxturntrain.usePIDOutput(-.5);
     		} 
     		else {
-    			Robot.navxturntrain.usePIDOutput(.1);
+    			Robot.navxturntrain.usePIDOutput(.5);
     		}
     		
     	}
@@ -46,6 +46,7 @@ public class NavXTurn extends Command {
     		System.out.println("\n=====================");
         	System.out.println("NavX Angle: " + GyroPIDController.navX.getAngle());
         	System.out.println("Error: " + Robot.navxturntrain.getPIDController().getError());
+        	System.out.println("Calculated Error: " + Math.abs(Robot.navxturntrain.getSetpoint() - GyroPIDController.navX.getAngle()));
         	System.out.println("PID Output: " + Robot.navxturntrain.getPIDController().get());
         	System.out.println("=====================\n");
     	}
@@ -54,6 +55,7 @@ public class NavXTurn extends Command {
      		System.out.println("\n=====================");
         	System.out.println("FINAL NavX Angle: " + GyroPIDController.navX.getAngle());
         	System.out.println("FINAL Error: " + Robot.navxturntrain.getPIDController().getError());
+        	System.out.println("FINAL Calculated Error: " + Math.abs(Robot.navxturntrain.getSetpoint() - GyroPIDController.navX.getAngle()));
         	System.out.println("FINAL PID Output: " + Robot.navxturntrain.getPIDController().get());
         	System.out.println("=====================\n");
     	}

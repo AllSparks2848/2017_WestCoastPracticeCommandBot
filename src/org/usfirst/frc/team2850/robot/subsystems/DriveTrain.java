@@ -9,12 +9,12 @@ import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
 
 public class DriveTrain extends PIDSubsystem {
-	Spark leftDrive1 = new Spark(RobotMap.p_leftDrive1);
-	Spark leftDrive2 = new Spark(RobotMap.p_leftDrive2);
-	Spark leftDrive3 = new Spark(RobotMap.p_leftDrive3);
-	Spark rightDrive1 = new Spark(RobotMap.p_rightDrive1);
-	Spark rightDrive2 = new Spark(RobotMap.p_rightDrive2);
-	Spark rightDrive3 = new Spark(RobotMap.p_rightDrive3);
+	public static Spark leftDrive1 = new Spark(RobotMap.p_leftDrive1);
+	public static Spark leftDrive2 = new Spark(RobotMap.p_leftDrive2);
+	public static Spark leftDrive3 = new Spark(RobotMap.p_leftDrive3);
+	public static Spark rightDrive1 = new Spark(RobotMap.p_rightDrive1);
+	public static Spark rightDrive2 = new Spark(RobotMap.p_rightDrive2);
+	public static Spark rightDrive3 = new Spark(RobotMap.p_rightDrive3);
 	
 	private static double pDrive = .07;
 	private static double iDrive = 0;
@@ -24,8 +24,8 @@ public class DriveTrain extends PIDSubsystem {
 	public static Encoder leftEncoder = new Encoder(RobotMap.p_leftEncoderA, RobotMap.p_leftEncoderB, false, Encoder.EncodingType.k4X);
 	public static ADXRS450_Gyro gyro = new ADXRS450_Gyro();
 	
-	RobotDrive drive1 = new RobotDrive(leftDrive1, leftDrive2, rightDrive1, rightDrive2);
-	RobotDrive drive2 = new RobotDrive(leftDrive3, rightDrive3);
+	public static RobotDrive drive1 = new RobotDrive(leftDrive1, leftDrive2, rightDrive1, rightDrive2);
+	public static RobotDrive drive2 = new RobotDrive(leftDrive3, rightDrive3);
 	
     // Initialize your subsystem here
     public DriveTrain() {

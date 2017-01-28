@@ -1,9 +1,8 @@
 package org.usfirst.frc.team2850.robot;
 
 import org.usfirst.frc.team2850.robot.commands.AutonGearLeft;
-import org.usfirst.frc.team2850.robot.commands.DriveToDistance;
 import org.usfirst.frc.team2850.robot.subsystems.DriveTrain;
-
+import org.usfirst.frc.team2850.robot.subsystems.GyroPIDController;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -24,6 +23,7 @@ public class Robot extends IterativeRobot {
 	Command autonomousCommand;
 
 	public static DriveTrain drivetrain = new DriveTrain();
+	public static GyroPIDController navxturntrain = new GyroPIDController();
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -33,9 +33,7 @@ public class Robot extends IterativeRobot {
 		autonomousCommand = new AutonGearLeft();
 		oi = new OI();
 		SmartDashboard.putData(Scheduler.getInstance());
-		SmartDashboard.putData(drivetrain);
-		
-		
+		SmartDashboard.putData(drivetrain);		
 	}
 
 	/**
@@ -45,6 +43,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void disabledInit() {
+		
 	}
 
 	@Override

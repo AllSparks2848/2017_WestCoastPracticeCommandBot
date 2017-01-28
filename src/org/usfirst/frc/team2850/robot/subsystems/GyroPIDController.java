@@ -14,7 +14,7 @@ public class GyroPIDController extends PIDSubsystem {
 	
 //	navX PID variables
 	private static double kP = 0.025;
-	private static double kI = 0.0001;
+	private static double kI = 0.0002;
 	private static double kD = 0.06;
 	public static double navXInput = 0;
 	
@@ -32,7 +32,7 @@ public class GyroPIDController extends PIDSubsystem {
         return navXInput;
     }
 
-    protected void usePIDOutput(double output) {
+    public void usePIDOutput(double output) {
         // Use output to drive system
     	DriveTrain.drive1.tankDrive(output, -output);
     	DriveTrain.drive2.tankDrive(output, -output);

@@ -1,12 +1,37 @@
 package org.usfirst.frc.team2850.robot;
 
+import org.usfirst.frc.team2850.robot.commands.AlterOuterGain;
+import org.usfirst.frc.team2850.robot.commands.Shoot;
+import org.usfirst.frc.team2850.robot.commands.ShootPID;
+
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.Button;
+import edu.wpi.first.wpilibj.buttons.JoystickButton;
 
 /**
  * This class is the glue that binds the controls on the physical operator
  * interface to the commands and command groups that allow control of the robot.
  */
 public class OI {
+	Joystick xbox1 = new Joystick(RobotMap.p_xbox1);
+	Button a = new JoystickButton(xbox1, 1);
+	Button b = new JoystickButton(xbox1, 2);
+	Button x = new JoystickButton(xbox1, 3);
+	Button y = new JoystickButton(xbox1, 4);
+	
+	Button lBump = new JoystickButton(xbox1, 5);
+	Button rBump = new JoystickButton(xbox1, 6);
+	
+	public OI() {
+		a.whileHeld(new ShootPID(1575));
+		a.whenReleased(new ShootPID(0));
+//		b.whileHeld(new Shoot(1));
+//		x.whileHeld(new Shoot(.8));
+//		y.whileHeld(new Shoot(.7));
+//		
+		lBump.whenPressed(new AlterOuterGain(-.05));
+		rBump.whenPressed(new AlterOuterGain(.05));
+	}
 	//// CREATING BUTTONS
 	// One type of button is a joystick button which is any button on a
 	//// joystick.

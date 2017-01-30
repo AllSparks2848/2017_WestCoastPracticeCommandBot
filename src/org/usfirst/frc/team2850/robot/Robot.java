@@ -3,6 +3,7 @@ package org.usfirst.frc.team2850.robot;
 import org.usfirst.frc.team2850.robot.commands.AutonGearLeft;
 import org.usfirst.frc.team2850.robot.commands.DriveToDistance;
 import org.usfirst.frc.team2850.robot.subsystems.DriveTrain;
+import org.usfirst.frc.team2850.robot.subsystems.ElevatorShooter;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
@@ -24,6 +25,7 @@ public class Robot extends IterativeRobot {
 	Command autonomousCommand;
 
 	public static DriveTrain drivetrain = new DriveTrain();
+	public static ElevatorShooter elevatorshooter = new ElevatorShooter();
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.

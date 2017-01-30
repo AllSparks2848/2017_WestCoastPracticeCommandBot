@@ -1,8 +1,10 @@
 package org.usfirst.frc.team2850.robot;
 
+import org.spectrum3847.RIOdroid.RIOdroid;
 import org.usfirst.frc.team2850.robot.commands.AutonGearLeft;
-import org.usfirst.frc.team2850.robot.commands.DriveToDistance;
 import org.usfirst.frc.team2850.robot.subsystems.DriveTrain;
+import org.usfirst.frc.team2850.robot.vision.TestUpdateReceiver;
+import org.usfirst.frc.team2850.robot.vision.VisionServer;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
@@ -19,7 +21,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Robot extends IterativeRobot {
 	public static OI oi;
+	public static Logger logger;
+	public static FileIO fileIO = new FileIO();
+    private int LOGGER_LEVEL = 5;
+    boolean useConsole = true, useFile = true;
 	public static RobotMap robot = new RobotMap();
+	public static VisionServer visionServer;
+	public static TestUpdateReceiver testUpdateReceiver;
 
 	Command autonomousCommand;
 
@@ -30,10 +38,16 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
+		logger = new Logger(useConsole, useFile, LOGGER_LEVEL);
 		autonomousCommand = new AutonGearLeft();
 		oi = new OI();
 		SmartDashboard.putData(Scheduler.getInstance());
 		SmartDashboard.putData(drivetrain);
+		 RIOdroid.initUSB();
+	        
+	        visionServer = VisionServer.getInstance();
+	        testUpdateReceiver = new TestUpdateReceiver();
+	        visionServer.addVisionUpdateReceiver(testUpdateReceiver);
 		
 		
 	}

@@ -1,6 +1,7 @@
 package org.usfirst.frc.team2850.robot.subsystems;
 
 import org.usfirst.frc.team2850.robot.RobotMap;
+import org.usfirst.frc.team2850.robot.lib.Rotation2d;
 
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
@@ -16,6 +17,22 @@ public class DriveTrain extends PIDSubsystem {
 	Spark rightDrive2 = new Spark(RobotMap.p_rightDrive2);
 	Spark rightDrive3 = new Spark(RobotMap.p_rightDrive3);
 	
+	private int leftEncoderZero, rightEncoderZero;
+    private boolean leftReverseEnc;
+    private boolean rightReverseEnc;
+    private int leftEncSign;
+    private int rightEncSign;
+    public double kP = 0, kI = 0, kD = 0;
+	public double kF;
+	double pPos = 0, iPos = 0, fPos = 0;
+	int iZone = 0;
+	
+	private static final double WHEEL_DIAMETER_IN = 4.0;
+	private static final int COUNTS_PER_REV = 360; //TODO: Determine actual value
+	
+	double leftSetpoint, rightSetpoint;
+	double tolerance = 4.0 / COUNTS_PER_REV;
+
 	private static double pDrive = .07;
 	private static double iDrive = 0;
 	private static double dDrive = .007;
@@ -55,5 +72,143 @@ public class DriveTrain extends PIDSubsystem {
     	drive1.tankDrive(left, right);
     	drive2.tankDrive(left, right);
     }
+    public void stop() {
+		setMotorsRaw(0,0);
+	}
+	
+	// Converts inches/second to motor percentage using feed-forward term
+	public void setMotorsInchesPerSecondOpenLoop(double left, double right) {
+		double leftSpeed = kF * inchesPerSecondToRPM(left) * COUNTS_PER_REV / 1023 / 60;
+		double rightSpeed = kF * inchesPerSecondToRPM(right) * COUNTS_PER_REV / 1023 / 60;
+		
+		setMotors(leftSpeed, rightSpeed);
+	}
+	
+	public void setMotors(double left, double right) {
+		left = scaleLeft(left);
+		right = scaleRight(right);
+		
+		setMotorsRaw(left, right);
+	}
+
+	public void setMotorsRaw(double left, double right) {
+		left = safetyTest(left);
+		right = safetyTest(right);
+		
+		
+		leftDrive1.set(left);
+		rightDrive1.set(right);	
+		leftDrive2.set(left);
+		rightDrive2.set(right);	
+		leftDrive3.set(left);
+		rightDrive3.set(right);	
+	}
+	
+	private double safetyTest(double motorValue) {
+	    motorValue = (motorValue < -1) ? -1 : motorValue;
+	    motorValue = (motorValue > 1) ? 1 : motorValue;
+	    
+	    return motorValue;
+	}
+	
+	
+	
+	
+	/*
+	public boolean nearSetpoint() {
+		double currentLeftPosition = leftMotorFront.getPosition();
+		boolean nearLeft = Math.abs(leftSetpoint - currentLeftPosition) < tolerance;
+		
+		double currentRightPosition = rightMotorFront.getPosition();
+		boolean nearRight = Math.abs(rightSetpoint - currentRightPosition) < tolerance;
+		
+		return nearLeft && nearRight;
+	}
+	*/
+	private double scaleLeft(double left) {
+		return left;
+	}
+	
+	private double scaleRight(double right) {
+		return right;
+	}
+	
+	public void resetEncoders() {
+		leftEncoderZero = leftEncoder.get();
+		rightEncoderZero = rightEncoder.get();
+	}
+	
+	public int getLeftEncoder() {
+		return leftEncSign * (leftEncoder.get() - leftEncoderZero);
+	}
+	
+	public int getRightEncoder() {
+		return rightEncSign * (rightEncoder.get() - rightEncoderZero);
+	}
+	
+	public double getLeftPositionInches() {
+		double rotations = ((double) getLeftEncoder()) / COUNTS_PER_REV;
+		
+		return rotationsToInches(rotations);
+	}
+	
+	public double getRightPositionInches() {
+		double rotations = ((double) getRightEncoder()) / COUNTS_PER_REV;
+		
+		return rotationsToInches(rotations);
+	}
+	
+	public double getLeftVelocity() {
+		return leftEncoder.getRate();
+	} 
+	
+	public double getRightVelocity() {
+		return rightEncoder.getRate();
+	}
+	
+	public double getLeftVelocityInchesPerSecond() {
+		return rpmToInchesPerSecond(getLeftVelocity());
+	}
+	
+	public double getRightVelocityInchesPerSecond() {
+		return rpmToInchesPerSecond(getRightVelocity());
+	}
+	
+	
+	
+	public Rotation2d getGyro() {
+		return Rotation2d.fromDegrees(gyro.getAngle());
+	}
+	
+	public void resetGyro() {
+		gyro.reset();
+	}
+	
+	public void calibrateGyro() {
+		gyro.calibrate();
+	}
+	
+	
+	
+	
+	
+	
+	
+	private double rotationsToInches(double rotations) {
+		return rotations * (Math.PI * WHEEL_DIAMETER_IN);
+	}
+	
+	private double inchesToRotations(double inches) {
+		return inches / (Math.PI * WHEEL_DIAMETER_IN);
+	}
+	
+	private double rpmToInchesPerSecond(double rpm) {
+		return rotationsToInches(rpm) / 60;
+	}
+	
+	private double inchesPerSecondToRPM(double inchesPerSecond) {
+		return inchesToRotations(inchesPerSecond * 60);
+	}
+ 
 }
 

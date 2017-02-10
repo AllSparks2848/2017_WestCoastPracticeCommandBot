@@ -1,7 +1,7 @@
 package org.usfirst.frc.team2850.robot.lib;
 
-import java.util.TreeMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Interpolating Tree Maps are used to get values at points that are not defined

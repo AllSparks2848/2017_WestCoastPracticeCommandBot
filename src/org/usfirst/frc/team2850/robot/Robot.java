@@ -1,15 +1,28 @@
 package org.usfirst.frc.team2850.robot;
 
-import org.spectrum3847.RIOdroid.RIOdroid;
-import org.usfirst.frc.team2850.robot.commands.AutonGearLeft;
-import org.usfirst.frc.team2850.robot.subsystems.DriveTrain;
-import org.usfirst.frc.team2850.robot.vision.TestUpdateReceiver;
-import org.usfirst.frc.team2850.robot.vision.VisionServer;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.usfirst.frc.team2850.robot.commands.DriveJoystickCommand;
+import org.usfirst.frc.team2850.robot.subsystems.DriveTrain;
+import org.usfirst.frc.team2850.robot.subsystems.SmartDashboardLogger;
+import org.usfirst.frc.team2850.robot.subsystems.Vision;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.filter.LevelFilter;
+import ch.qos.logback.classic.net.server.ServerSocketAppender;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.spi.FilterReply;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -19,80 +32,210 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * creating this project, you must also update the manifest file in the resource
  * directory.
  */
+
+/**
+ * The main robot class.
+ */
 public class Robot extends IterativeRobot {
-	public static OI oi;
-	public static Logger logger;
-	public static FileIO fileIO = new FileIO();
-    private int LOGGER_LEVEL = 5;
-    boolean useConsole = true, useFile = true;
-	public static RobotMap robot = new RobotMap();
-	public static VisionServer visionServer;
-	public static TestUpdateReceiver testUpdateReceiver;
+  static {
+    // logging levels:
+    // TRACE: constant 50hz spam (eg, drive outputs)
+    // DEBUG: Frequent events: results of calculations, command progress, subsystem methods called
+    // INFO: Infrequent events: command initialize/end, state changes
+    // WARN/ERROR: self-explanatory
 
-	Command autonomousCommand;
+    // configure logging
+    ch.qos.logback.classic.Logger root =
+        (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+    // enable TRACE level
+    root.setLevel(Level.ALL);
+    LoggerContext ctx = (LoggerContext) LoggerFactory.getILoggerFactory();
 
-	public static DriveTrain drivetrain = new DriveTrain();
-	/**
-	 * This function is run when the robot is first started up and should be
-	 * used for any initialization code.
-	 */
+    // disable TRACE level for console output
+    LevelFilter levelFilter = new LevelFilter();
+    levelFilter.setContext(ctx);
+    levelFilter.setLevel(Level.TRACE);
+    levelFilter.setOnMatch(FilterReply.DENY);
+    levelFilter.setOnMismatch(FilterReply.ACCEPT);
+    levelFilter.start();
+    // find the console appender and apply filter
+    Iterator<Appender<ILoggingEvent>> apps = root.iteratorForAppenders();
+    while (apps.hasNext()) {
+      apps.next().addFilter(levelFilter);
+    }
+
+    // send full logs (with TRACE) to drive laptop for offline analysis
+    ServerSocketAppender socketAppender = new ServerSocketAppender();
+    socketAppender.setContext(ctx);
+    socketAppender.setPort(5801);
+    socketAppender.start();
+    root.addAppender(socketAppender);
+  }
+  
+  public static DriveTrain driveTrain;
+	public static Vision vision;
+	  public static List<SmartDashboardLogger> allSubsystems;
+	  public static DriveJoystickCommand driveJoystickCommand;
+	  public static OperatorInterface operatorInterface;
+	  private static final Logger logger = LoggerFactory.getLogger(Robot.class);
+
+	  long prevNanos = System.nanoTime();
+
+	  Command autonomousCommand;
+	  SendableChooser<Command> chooser;
 	@Override
 	public void robotInit() {
-		logger = new Logger(useConsole, useFile, LOGGER_LEVEL);
-		autonomousCommand = new AutonGearLeft();
-		oi = new OI();
-		SmartDashboard.putData(Scheduler.getInstance());
-		SmartDashboard.putData(drivetrain);
-		 RIOdroid.initUSB();
-	        
-	        visionServer = VisionServer.getInstance();
-	        testUpdateReceiver = new TestUpdateReceiver();
-	        visionServer.addVisionUpdateReceiver(testUpdateReceiver);
+		logger.info("robotInit()");
+		driveTrain = new DriveTrain();
+	    vision = new Vision();
+	    allSubsystems = Arrays.asList(driveTrain, vision);
+	    driveJoystickCommand = new DriveJoystickCommand();
+	    operatorInterface = new OperatorInterface();
+	    chooser = new SendableChooser<>();
+	    // chooser.addDefault("Default Auto", new ExampleCommand());
+	    // chooser.addObject("My Auto", new MyAutoCommand());
+	    SmartDashboard.putData("Auto mode", chooser);
+
+	    Thread updatePositionThread = new Thread(this::updatePosition);
+	    updatePositionThread.setDaemon(true);
+	    // in the debugger, we'd like to know what this is
+	    updatePositionThread.setName("Update Position Thread");
+	    updatePositionThread.start();
+	  
+	      
+	    
 		
 		
 	}
-
 	/**
-	 * This function is called once each time the robot enters Disabled mode.
-	 * You can use it to reset any subsystem information you want to clear when
-	 * the robot is disabled.
-	 */
-	@Override
-	public void disabledInit() {
-	}
+	   * Periodically updates robot dead reckoning position.
+	   */
+	  public void updatePosition() {
+	    logger.info("Initialize Update Position Thread");
+	    while (true) {
+	      driveTrain.updatePosition();
+	      try {
+	        Thread.sleep(17);
+	      } catch (InterruptedException ex) {
+	        ex.printStackTrace();
+	        logger.error("InterruptedException", ex);
+	      }
+	    }
+	  }
 
-	@Override
-	public void disabledPeriodic() {
-		Scheduler.getInstance().run();
-	}
+	  @Override
+	  public void robotPeriodic() {
+	    // measure total cycle time, time we take during robotPeriodic, and WPIlib overhead
+	    final long start = System.nanoTime();
+	    logger.trace("robotPeriodic()");
+	    Scheduler.getInstance().run();
 
-	@Override
-	public void autonomousInit() {
-		// schedule the autonomous command (example)
-			autonomousCommand.start();
-			
-	}
+	    allSubsystems.forEach(this::tryToSendDataToSmartDashboard);
+	    long currentNanos = System.nanoTime();
+	    SmartDashboard.putNumber("cycleMillis", (currentNanos - prevNanos) / 1000000.0);
+	    SmartDashboard.putNumber("ourTime", (currentNanos - start) / 1000000.0);
+	    prevNanos = currentNanos;
+	  }
 
-	/**
-	 * This function is called periodically during autonomous
-	 */
-	@Override
-	public void autonomousPeriodic() {
-		Scheduler.getInstance().run();
-	}
+	  /**
+	   * Call {@link SmartDashboardLogger#sendDataToSmartDashboard()} but with exception handling.
+	   * 
+	   * @param logger The logger to call the method on
+	   */
+	  public void tryToSendDataToSmartDashboard(SmartDashboardLogger logger) {
+	    try {
+	      logger.sendDataToSmartDashboard();
+	    } catch (Throwable ex) {
+	      Robot.logger.debug("Error in tryToSendDataToSmartDashboard", ex);
+	    }
+	  }
+	  
+	  /**
+	   * This function is called once each time the robot enters Disabled mode. You can use it to reset
+	   * any subsystem information you want to clear when the robot is disabled.
+	   */
+	  @Override
+	  public void disabledInit() {
+	    logger.trace("disabledInit()");
+	  }
 
-	@Override
-	public void teleopInit() {
-			autonomousCommand.cancel();
-	}
+	  @Override
+	  public void disabledPeriodic() {
+	    SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
+	    logger.trace("disabledPeriodic()");
+	  }
 
-	@Override
-	public void teleopPeriodic() {
-		Scheduler.getInstance().run();
+	  @Override
+	  public void autonomousInit() {
+	    logger.trace("autonomousInit()");
+	    autonomousCommand = chooser.getSelected();
+
+	    /*
+	     * String autoSelected = SmartDashboard.getString("Auto Selector", "Default");
+	     * switch(autoSelected) { case "My Auto": autonomousCommand = new MyAutoCommand(); break; case
+	     * "Default Auto": default: autonomousCommand = new ExampleCommand(); break; }
+	     */
+
+	    // zero the navX for our starting position. Having the call here instead of in robotInit() or
+	    // the DriveTrain constructor makes sure it is zeroed when the robot is actually physically
+	    // aligned, but not reset again if the robot code crashes and restarts
+	    driveTrain.resetNavX();
+
+	    // schedule the autonomous command (example)
+	    if (autonomousCommand != null) {
+	      autonomousCommand.start();
+	    }
+	  }
+
+	  /**
+	   * This function is called periodically during autonomous.
+	   */
+	  @Override
+	  public void autonomousPeriodic() {
+	    // measure wpilib overhead between robotPeriodic and specific *perodic methods
+	    // calling order is
+	    // 1. m_ds.waitForData()
+	    // 2. (auto|teleop|disabled)Periodic
+	    // 3. robotPeriodic()
+	    SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
+	    logger.trace("autonomousPeriodic()");
+	  }
+
+	  @Override
+	  public void teleopInit() {
+	    logger.trace("teleopInit()");
+	    
+	   
+	   
+	      logger.info("Wheel radius: " + RobotMap.WHEEL_RADIUS);
+	   
+	    
+	    // This makes sure that the autonomous stops running when
+	    // teleop starts running. If you want the autonomous to
+	    // continue until interrupted by another command, remove
+	    // this line or comment it out.
+	    if (autonomousCommand != null) {
+	      autonomousCommand.cancel();
+	    }
+
+	    driveJoystickCommand.start();
+	  }
+
+	  /**
+	   * This function is called periodically during operator control.
+	   */
+	  @Override
+	  public void teleopPeriodic() {
+	    SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
+	    logger.trace("teleopPeriodic()");
+	  }
+
+	  /**
+	   * This function is called periodically during test mode.
+	   */
+	  @Override
+	  public void testPeriodic() {
+	    logger.trace("testPeriodic()");
+	    LiveWindow.run();
+	  }
 	}
-	
-	@Override
-	public void testPeriodic() {
-		LiveWindow.run();
-	}
-}
